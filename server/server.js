@@ -8,12 +8,6 @@ const mongoose = require('mongoose');
 const Discord = require('discord.js')
 require("dotenv").config()
 
-// const graphqlHttp = require('express-graphql');
-// const graphql_schema = require('./graphql/api_schema')
-
-// const { buildSchema } = require("graphql")
-
-
 //##Item imports------------------------------
 const base_item = require('./models/base_item');
 
@@ -24,46 +18,28 @@ const list_of_text = require('./models/list_of_text');
 const simple_counter = require('./models/simple_counter');
 
 
-//##constants
-const MONGO_URL = "mongodb://127.0.0.1:27017/?&gssapiServiceName=mongodb";
-const server_port = 3003;
-const MAIN_FOLDER_ID = "60ef0d4b007d3a96f952ae19"
-const DISCORD_COMMANDS = ["!gameserver", "!gs"]
-
 //##express-socket.io initialisation---------------------------------
 const app = express();
 
 app.use(express.json());
 
-//seve react app
-//app.use("/react")
+app.use("/static", express.static(path.resolve(__dirname, "frontend", "static")))
 
-app.use("/static", express.static(path.resolve(__dirname, "js-app-build", "static")))
-
-app.get("/js", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "js-app-build", "index.html"))
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "frontend", "index.html"))
 })
 
 const rest_router = require("./routes/rest.js");
 app.use("/api" , rest_router);
-
-// app.use('graphql', graphqlHttp(graphql_schema));
-
-// for testing a build version of the react app without having to use corse
-// app.use(express.static(path.join(__dirname, "react-app-build")));
-
-app.get('/', (req, res) => {
-    res.send("hello from nodejs server")
-});
 
 
 const server = http.createServer(app);
 
 const io = socketIo(server); 
 
-server.listen(server_port, () => {
+server.listen(process.env.SERVER_PORT, () => {
     //code to get executed, when the server is started
-    console.log("Server started");
+    console.log("Server started - "+ process.env.DISCORD_COMMANDS);
 
 });
 
@@ -102,7 +78,7 @@ io.on("connection", (socket) => {
 
 
 //##MongoDB-------------------------------
-mongoose.connect(MONGO_URL,{
+mongoose.connect(process.env.MONGO_URL,{
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -112,24 +88,25 @@ mongoose.connect(MONGO_URL,{
 //##Discord-Bot-------------------------------
 
 
-const client = new Discord.Client({
-    intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_PRESENCES"],
-})
+// const client = new Discord.Client({
+//     intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_PRESENCES"],
+// })
 
-client.on("ready", async () => {
-  console.log(`Logged in as ${client.user.tag}`)
-})
-client.login(process.env.DISCORD_TOKEN)
+// client.on("ready", async () => {
+//   console.log(`Logged in as ${client.user.tag}`)
+// })
+// client.login(process.env.DISCORD_TOKEN)
 
-client.on("message", (message) => {
-  const splitMessage = message.content.split(" ")
+// client.on("message", (message) => {
+//   const splitMessage = message.content.split(" ")
 
-  if (DISCORD_COMMANDS.includes(splitMessage[0])) {
-    if (splitMessage[1] === "test"){
-      message.reply("The bot seems to be working")
-    }
-  }
-})
+//   //DISCORD_COMMANDS are not parsed yet
+//   if (process.env.DISCORD_COMMANDS.includes(splitMessage[0])) {
+//     if (splitMessage[1] === "test"){
+//       message.reply("The bot seems to be working")
+//     }
+//   }
+// })
 
 //------------------------------------------------------
 
