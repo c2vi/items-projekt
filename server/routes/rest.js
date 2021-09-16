@@ -29,6 +29,17 @@ function addToMainFolder(id){
 
 }
 
+function validate_ObjektId(id){
+if (mongoose.Types.ObjectId.isValid(id)){
+    if (mongoose.Types.ObjectId(id) == id) {
+        return true;
+
+    }
+} else {return false;}
+
+}
+
+
 
 
 //##Module exports--------------------------------
@@ -41,14 +52,18 @@ router.get("/", (req, res) => {
 
 //##Getting one-----------------------------------------
 router.get("/:id", (req, res) => {
-    if ( req.params.id == "main"){
-        req.params.id = "60ef0d4b007d3a96f952ae19"
-    }
-    if ( req.params.id == "loading..."){
-        return
-    }
-base_item.findById(req.params.id)
-    .populate({
+
+const id = req.params.id;
+
+let test = {}
+if (validate_ObjektId(id)) {
+    test = base_item.find( { _id: id } )
+} else {
+    console.log(id+"    is not an objectID")
+    test = base_item.find( { _name : id } )
+}
+
+    test.populate({
         path: "items",
         populate: {
             path: "items",
@@ -58,7 +73,7 @@ base_item.findById(req.params.id)
         }
     })
     .exec()
-    .then( doc => {res.status(200).send(doc) })
+    .then( data => {res.status(200).send(data[0]) }) //the [0] because the Modle.find() returns an array of matches
     .catch( err => {console.log(err)});
 
 

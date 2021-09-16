@@ -7,7 +7,8 @@ const options_base_item = {
 
 const schema_base_item = new mongoose.Schema({
     _typeid: String,
-    _id: mongoose.Schema.Types.ObjectId
+    _id: mongoose.Schema.Types.ObjectId,
+    _name: { type : String, unique : true },
 
 }, options_base_item); 
 
