@@ -92,7 +92,7 @@ function init(){
 	client.on("message", async (message) => {
 		const splitMessage = message.content.split(" ")
 
-		if (process.env.DISCORD_COMMANDS.includes(splitMessage[0])) {
+		if ( splitMessage[0] === "!gs") {
 
 			//other commands
 			if (splitMessage[1] === "test"){
