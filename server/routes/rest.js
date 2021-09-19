@@ -4,23 +4,18 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 //##Item imports------------------------------
-const base_item = require('../models/base_item');
-
-const plain_text = require('../models/plain_text');
-const number_int = require('../models/number_int');
-const folder = require('../models/folder');
-const list_of_text = require('../models/list_of_text');
-const simple_counter = require('../models/simple_counter');
+const backend_items = require('../registered_items')
+const base_item = backend_items.base_item;
 
 const MAIN_FOLDER_ID = "60ef0d4b007d3a96f952ae19"
 
 function addToMainFolder(id){
-    folder.findById(MAIN_FOLDER_ID)
+    backend_items.folder.model.findById(MAIN_FOLDER_ID)
         .exec()
         .then( main_folder => {
             let new_items = main_folder.items;
             new_items.push(id);
-            folder.updateOne( {_id: MAIN_FOLDER_ID}, { $set: {items: new_items}}).exec()
+            backend_items.folder.model.updateOne( {_id: MAIN_FOLDER_ID}, { $set: {items: new_items}}).exec()
             // MainFolder.items = items;
             // MainFolder.save();
         })
@@ -57,10 +52,10 @@ const id = req.params.id;
 
 let test = {}
 if (validate_ObjektId(id)) {
-    test = base_item.find( { _id: id } )
+    test = backend_items.base_item.model.find( { _id: id } )
 } else {
-    console.log(id+"    is not an objectID")
-    test = base_item.find( { _name : id } )
+    // console.log(id+"    is not an objectID")
+    test = backend_items.base_item.model.find( { _name : id } )
 }
 
     test.populate({
@@ -69,7 +64,8 @@ if (validate_ObjektId(id)) {
             path: "items",
             populate: {
                 path: "items"
-            }
+            },
+        path: "game",
         }
     })
     .exec()
@@ -81,11 +77,12 @@ if (validate_ObjektId(id)) {
 })
 
 //##Creating one-----------------------------------------
-router.post("/plain_text", (req, res) => {
+router.post("/game_server", (req, res) => {
 
-    item = new plain_text({
+    item = new backend_items.game_server.model({
         _id: new mongoose.Types.ObjectId(),
-        text: req.body.text
+        _name: req.body._name,
+        game: req.body.game,
     });
     addToMainFolder(item.id)    
     item.save()
@@ -94,66 +91,83 @@ router.post("/plain_text", (req, res) => {
     res.status(200).send("created item");
 })
 
-router.post("/simple_counter", (req, res) => {
+router.post("/computer_game", (req, res) => {
 
-    item = new simple_counter({
+    item = new backend_items.computer_game.model({
         _id: new mongoose.Types.ObjectId(),
-        counter_name: req.body.counter_name,
-        value: req.body.value
+        _name: req.body._name,
+        name: req.body.name,
+        on_steam: req.body.on_steam,
+        steam_store_link: req.body.steam_store_link,
+        steam_open_link: req.body.steam_open_link,
+        steam_id: req.body.steam_id,
     });
     addToMainFolder(item.id)    
     item.save()
 
 
-    res.status(200).send("created item:");
+    res.status(200).send("created item");
 })
 
+// router.post("/simple_counter", (req, res) => {
 
-router.post("/list_of_text", (req, res) => {
-
-    item = new list_of_text({
-        _id: new mongoose.Types.ObjectId(),
-        items: req.body.ids
-    });
-    addToMainFolder(item.id)    
-    item.save()
-
-
-    res.status(200).send("created list_of_text:");
-})
+//     item = new simple_counter({
+//         _id: new mongoose.Types.ObjectId(),
+//         counter_name: req.body.counter_name,
+//         value: req.body.value
+//     });
+//     addToMainFolder(item.id)    
+//     item.save()
 
 
-router.post("/folder", (req, res) => {
-
-    item = new folder({
-        _id: new mongoose.Types.ObjectId(),
-        items: req.body.ids,
-        folder_name: req.body.folder_name
-    });
-    addToMainFolder(item.id)    
-    item.save()
+//     res.status(200).send("created item:");
+// })
 
 
-    res.status(200).send("created item:");
-})
+// router.post("/list_of_text", (req, res) => {
+
+//     item = new list_of_text({
+//         _id: new mongoose.Types.ObjectId(),
+//         items: req.body.ids
+//     });
+//     addToMainFolder(item.id)    
+//     item.save()
+
+
+//     res.status(200).send("created list_of_text:");
+// })
+
+
+// router.post("/folder", (req, res) => {
+
+//     item = new folder({
+//         _id: new mongoose.Types.ObjectId(),
+//         items: req.body.ids,
+//         folder_name: req.body.folder_name
+//     });
+//     addToMainFolder(item.id)    
+//     item.save()
+
+
+//     res.status(200).send("created item:");
+// })
 
 
 //##Updating one-----------------------------------------
-router.patch("/:id", (req, res) => {
+// router.patch("/:id", (req, res) => {
 
-    // plain_text.update( {_id: req.params.id }, { $set: {text: "testing"}} , function(err,docs){console.log("mongolog: " + docs)}  ) //.exec().then(console.log("updated")).catch(err => console.log(err))
+//     // plain_text.update( {_id: req.params.id }, { $set: {text: "testing"}} , function(err,docs){console.log("mongolog: " + docs)}  ) //.exec().then(console.log("updated")).catch(err => console.log(err))
 
 
-    res.send("does nothing");
-})
+//     res.send("does nothing");
+// })
 
 //##Deleting one-----------------------------------------
-router.get("/", (req, res) => {
+// router.get("/", (req, res) => {
 
 
-
-    res.send();
-})
+//     res.send();
+// })
 
 //##end---------------------------------------------
 module.exports = router;

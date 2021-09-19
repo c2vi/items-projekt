@@ -47,7 +47,7 @@ async function main() {
 
 
 	//update url
-	history.replaceState(null, null, item._name ? item._name : item._id);
+	// history.replaceState(null, null, item._name ? item._name : item._id);
 
 
 

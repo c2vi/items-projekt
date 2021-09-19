@@ -12,6 +12,6 @@ const schema_base_item = new mongoose.Schema({
 
 }, options_base_item); 
 
-const model_base_item = new mongoose.model("base_item", schema_base_item)
+const model = new mongoose.model("base_item", schema_base_item)
 
-module.exports = model_base_item
+module.exports = {model}

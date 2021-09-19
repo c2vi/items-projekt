@@ -9,14 +9,7 @@ const Discord = require('discord.js')
 require("dotenv").config()
 
 //##Item imports------------------------------
-const base_item = require('./models/base_item');
-
-const plain_text = require('./models/plain_text');
-const number_int = require('./models/number_int');
-const folder = require('./models/folder');
-const list_of_text = require('./models/list_of_text');
-const simple_counter = require('./models/simple_counter');
-
+const backend_items = require('./registered_items')
 
 //##express-socket.io initialisation---------------------------------
 const app = express();
@@ -52,7 +45,7 @@ io.on("connection", (socket) => {
       data = JSON.parse(data);
       delete data._typeid
       console.log(data.value)
-      simple_counter.updateOne( {_id: data._id }, { $set: data } )
+      backend_items.simple_counter.model.updateOne( {_id: data._id }, { $set: data } )
       .exec()
       .then( () => {
         io.emit("update", data);
@@ -63,7 +56,7 @@ io.on("connection", (socket) => {
     socket.on("load_items", (item_ids) => {
       let items = []
       JSON.parse(item_ids).map( item_id => {
-        base_item.findById(item_id)
+        backend_items.base_item.model.findById(item_id)
           .exec()
           .then( item => items.push(item))
           .catch( err => console.log(err));
@@ -84,29 +77,6 @@ mongoose.connect(process.env.MONGO_URL,{
 });
 
 
-
-//##Discord-Bot-------------------------------
-
-
-// const client = new Discord.Client({
-//     intents: ["GUILDS", "GUILD_MESSAGES", "GUILD_MEMBERS", "GUILD_PRESENCES"],
-// })
-
-// client.on("ready", async () => {
-//   console.log(`Logged in as ${client.user.tag}`)
-// })
-// client.login(process.env.DISCORD_TOKEN)
-
-// client.on("message", (message) => {
-//   const splitMessage = message.content.split(" ")
-
-//   //DISCORD_COMMANDS are not parsed yet
-//   if (process.env.DISCORD_COMMANDS.includes(splitMessage[0])) {
-//     if (splitMessage[1] === "test"){
-//       message.reply("The bot seems to be working")
-//     }
-//   }
-// })
 
 //------------------------------------------------------
 
