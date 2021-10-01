@@ -39,15 +39,24 @@ async function main() {
 	//get the correct render object
 	const item_render = await import(`/static/items/${item._typeid}/index.js`)
 
+	const render = { simple_type : "pc_full"}
+
 
 	//render the item
-	const frame_div = document.getElementById("item-frame")
-	const render = { simple_type : "pc_full"}
-	frame_div.innerHTML = await item_render.render(item, render, site)
-
+	const item_frame = document.getElementById("item-frame")
+	item_frame.innerHTML=""
+	const element_tag = item._typeid.split("_").join("-")
+	const item_element = document.createElement(element_tag);
+	// const test = Object.values(item_render_class)[0]
+	// const item_element = new test()
+	item_element.item = item
+	item_element.site = site
+	item_element.render = render
+	console.log(item)
+	item_frame.appendChild(item_element)
 
 	//update url
-	// history.replaceState(null, null, item._name ? item._name : item._id);
+	history.replaceState(null, null, item._name ? item._name : item._id);
 
 
 
@@ -75,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
+//##########################################
 
 
 // const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");

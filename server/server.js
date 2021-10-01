@@ -71,10 +71,18 @@ io.on("connection", (socket) => {
 
 
 //##MongoDB-------------------------------
-mongoose.connect(process.env.MONGO_URL,{
+const mongo = mongoose.connect(process.env.MONGO_URL,{
     useNewUrlParser: true,
     useUnifiedTopology: true
-});
+}).then( test => {module.exports = test});
+
+// async function test(id){
+//   const moodle_site = await backend_items.moodle_site.model.find({ _id:id }).exec()
+//   console.log(moodle_site)
+
+// }
+// test("614517d6cc66fd370b7a928c")
+
 
 
 

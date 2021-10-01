@@ -1,5 +1,6 @@
 import {BaseItemClass} from "../base_item/index.js"
-export class PlainText extends BaseItemClass {
+
+export class Element extends BaseItemClass {
 	constructor(){
 		super()
 		this.shadow_dom = this.attachShadow({ mode: "open"})
@@ -23,5 +24,4 @@ export class PlainText extends BaseItemClass {
 
 }
 
-
-customElements.define("plain-text", PlainText)
+customElements.define("icon-item", Element)

@@ -46,34 +46,52 @@ router.get("/", (req, res) => {
 })
 
 //##Getting one-----------------------------------------
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
 
 const id = req.params.id;
 
-let test = {}
-if (validate_ObjektId(id)) {
-    test = backend_items.base_item.model.find( { _id: id } )
-} else {
-    // console.log(id+"    is not an objectID")
-    test = backend_items.base_item.model.find( { _name : id } )
+if (id.search("_") != -1) {
+    const typeid = id.split("_")[0].split("-").join("_")
+    const item = await backend_items[typeid].get_external(id)
+    console.log(item)
+    res.status(200).send(item)
+    return
 }
 
-    test.populate({
+let item_mongoose = {}
+
+if (validate_ObjektId(id)) {
+    item_mongoose = backend_items.base_item.model.findOne( { _id: id } )
+} else {
+    item_mongoose = backend_items.base_item.model.findOne( { _name : id } )
+}
+
+    item_mongoose.populate({
         path: "items",
         populate: {
             path: "items",
             populate: {
-                path: "items"
+                path: "items",
             },
         path: "game",
-        }
+        path: "icon",
+        },
     })
-    .exec()
-    .then( data => {res.status(200).send(data[0]) }) //the [0] because the Modle.find() returns an array of matches
-    .catch( err => {console.log(err)});
+
+    let item = await item_mongoose.lean().exec()
+
+    if (item && item.external_items && item.external_items.length != 0) {
+        
+        item.external_items = await Promise.all(item.external_items.map( async (external_item_id) => {
+            const typeid = external_item_id.split("_")[0].split("-").join("_")
+            const test = await backend_items[typeid].get_external(external_item_id)
+            return test
+        }))
+
+    }
 
 
-
+    res.status(200).send(item)
 })
 
 //##Creating one-----------------------------------------

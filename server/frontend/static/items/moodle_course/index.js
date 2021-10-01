@@ -24,4 +24,4 @@ export class PlainText extends BaseItemClass {
 }
 
 
-customElements.define("plain-text", PlainText)
+customElements.define("moodle-course", PlainText)

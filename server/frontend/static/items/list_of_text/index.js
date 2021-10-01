@@ -1,17 +1,27 @@
-export function test(){
-	console.log("hello from folder item")
+import {BaseItemClass} from "../base_item/index.js"
+export class PlainText extends BaseItemClass {
+	constructor(){
+		super()
+		this.shadow_dom = this.attachShadow({ mode: "open"})
+	}
+
+	
+	connectedCallback(){
+		this.render_func(this.item)
+	}
+
+
+	async render_func(item) {
+		
+		this.shadow_dom.innerHTML = `
+			<p> ${item._typeid}</p>
+			<p> ${item._name}</p>
+		`
+
+	}
+
+
 }
 
-export async function render(data){
-	return `
-	<div id="${data._id}">
-	<p> id: ${data._id}</p>
-	<p> type: ${data._typeid}</p>
-	</div>
-	`
-}
 
-
-	// ${data.items.map( (item) => {
-	// 	return `<p>--------------------</p><h3>${item._typeid}</h3>`
-	// })}	
+customElements.define("list-of-text", PlainText)
