@@ -13,18 +13,23 @@ export class Component extends BaseItemClass {
 
 
 	async render_func(item) {
+		//make sure icon item is laoded - which is not necessary now
+		// await get_renders([{item_typeid: "icon_item", render_id: "something"}])
 
-		if (this.render.simple_type == "pc_in_folder"){
+		//get icon item
+		const [icon_item] = await this.site.get_items([item.icon], {})
+
+		if (this.render.render_id == "pc_in_folder"){
 
 		this.shadow_dom.innerHTML = `
 			<div class="in_folder"> 
-				<img hight="50" width="50" src="${item.icon.url}"></img>
+				<img hight="50" width="50" src="${icon_item.url}"></img>
 				<div> ${item._typeid}</div>
 				<div> ${item._name}</div>
 			</div>
 		`
 
-		} else if (this.render.simple_type == "pc_full"){
+		} else if (this.render.render_id == "pc_full"){
 			this.shadow_dom.innerHTML = "hallo"
 
 		}

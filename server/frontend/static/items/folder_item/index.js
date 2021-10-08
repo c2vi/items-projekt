@@ -1,5 +1,4 @@
 import {BaseItemClass} from "../base_item/index.js"
-// const BaseItemClass = import("../base_item/index.js").then( testing => {console.log(testing)})
 
 export class Folder extends BaseItemClass {
 	constructor(){
@@ -16,39 +15,66 @@ export class Folder extends BaseItemClass {
 		this.render_func(this.item)
 	}
 
+	// async update_item(item){
+	// 	const folder_element = this.shadow_dom.getElementById(item._id)
+	// 	const url = `/static/items/${item._typeid}/index.js`
+	// 	const item_render = await import(url)
+
+	// 	const render = { simple_type : "pc_in_folder"}
+	// 	const item_element = document.createElement(item._typeid.split('_').join("-"));
+
+	// 	item_element.item = item
+	// 	item_element.site = this.site
+	// 	item_element.render = render
+	// 	folder_element.innerHTML = ""
+	// 	folder_element.appendChild(item_element)
+	// }
+
 	async render_func(item) {
 
+		if (this.render.render_id == "pc_full"){
 
-		if (this.render.simple_type == "pc_full"){
+			let item_ids = []
+			if (item.external_items){
+				item_ids = [ ...item.items, ...item.external_items]
+			} else {
+				item_ids = item.items
+			}
 
-			[ ...item.items, ...item.external_items].forEach( async (item) => {
-
-				const item_render = await import(`/static/items/${item._typeid}/index.js`)
-
-				const render = { simple_type : "pc_in_folder"}
-
+			//first load out a placeholder for all the items
+			const item_elements = item_ids.map( (id) => {
 				const folder_element = document.createElement("div")
-				folder_element.id = item._id
-				folder_element.setAttribute("ondblclick", `site.nav_to("${item._id}")`)
+				folder_element.id = id
+				folder_element.setAttribute("ondblclick", `site.nav_to("${id}")`)
 				folder_element.className = "folder-element"
 				this.wrapper.appendChild(folder_element)
+				return folder_element
+			})
 
-				// const item_element = document.createElement(item._typeid.split('_').join("-"));
-				const tmp = Object.values(item_render)[0]
-				const item_element = new tmp()
+			//then request the whole items
+			const items = await this.site.get_items(item_ids, {})
+
+			//make sure, that all renders are present
+			await this.site.get_renders(items.map( item => {return {item_typeid: item._typeid, render_id:"pc_in_folder"} }))
+
+			console.log(items)
+			for (const item of items) {
+				const [folder_element] = item_elements.filter( element => element.id === item._id)
+				const item_element = document.createElement(item._typeid.split("_").join("-"))
 				item_element.item = item
 				item_element.site = this.site
-				item_element.render = render
+				item_element.render = {item_typeid: item._typeid, render_id: "pc_in_folder"}
 				folder_element.appendChild(item_element)
+			}
 
 
-			})
-		} else if (this.render.simple_type == "pc_in_folder"){
+		} else if (this.render.render_id == "pc_in_folder"){
+			console.log("rendering folder in folder")
 
-			this.shadow_dom.innerHTML = `
-				<p> ${item._typeid}</p>
-				<p> ${item._name}</p>
-			`
+			this.shadow_dom.innerHTML = "a folder" //`
+			// 	<p> ${item._typeid}</p>
+			// 	<p> ${item._name}</p>
+			// `
 		}
 
 

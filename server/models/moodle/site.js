@@ -1,6 +1,7 @@
 const model_base_item = require("../base_item/main").model
 const moodle_client = require("moodle-client")
 const mongoose = require("mongoose")
+const fetch = require("node-fetch-commonjs").default
 
 
 schema = new mongoose.Schema({
@@ -16,9 +17,19 @@ schema.set('toObject', { virtuals: true })
 schema.set('toJSON', { virtuals: true })
 
 
-schema.virtual("token").get( function(){
-	return "d5a44f352d8f8b6b79f980bd3da171b9"
-})
+// schema.virtual("token").get( async function(){
+
+// 	const res = await fetch(this.wwwroot + "/login/token.php?" + new URLSearchParams({
+// 		username: this.username,
+// 		password: this.password,
+// 		service: "moodle-mobile-app",
+// 	}))
+// 	const tokens = await res.json()
+	
+// 	// console.log("------------------"+tokens.token)
+// 	return tokens.token
+// })
+
 // .set(function(token){
 // 	token = this.token
 // 	return "d5a44f352d8f8b6b79f980bd3da171b9"

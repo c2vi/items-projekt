@@ -12,6 +12,7 @@ export class PlainText extends BaseItemClass {
 
 
 	async render_func(item) {
+		this.id = item._id
 		
 		this.shadow_dom.innerHTML = `
 			<p> ${item._typeid}</p>

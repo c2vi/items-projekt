@@ -2,46 +2,20 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const funcs_from_main = require("../server")
 
 //##Item imports------------------------------
 const backend_items = require('../registered_items')
-const base_item = backend_items.base_item;
 
 const MAIN_FOLDER_ID = "60ef0d4b007d3a96f952ae19"
-
-function addToMainFolder(id){
-    backend_items.folder.model.findById(MAIN_FOLDER_ID)
-        .exec()
-        .then( main_folder => {
-            let new_items = main_folder.items;
-            new_items.push(id);
-            backend_items.folder.model.updateOne( {_id: MAIN_FOLDER_ID}, { $set: {items: new_items}}).exec()
-            // MainFolder.items = items;
-            // MainFolder.save();
-        })
-        .catch(err => console.log(err));
-
-
-}
-
-function validate_ObjektId(id){
-if (mongoose.Types.ObjectId.isValid(id)){
-    if (mongoose.Types.ObjectId(id) == id) {
-        return true;
-
-    }
-} else {return false;}
-
-}
-
-
 
 
 //##Module exports--------------------------------
 module.exports = router;
 
-//##Getting all-----------------------------------------
+//##Hello from api-----------------------------------------
 router.get("/", (req, res) => {
+    console.log(req.body)
     res.send("hello from the api");
 })
 
@@ -53,7 +27,6 @@ const id = req.params.id;
 if (id.search("_") != -1) {
     const typeid = id.split("_")[0].split("-").join("_")
     const item = await backend_items[typeid].get_external(id)
-    console.log(item)
     res.status(200).send(item)
     return
 }

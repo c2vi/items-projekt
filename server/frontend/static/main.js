@@ -1,67 +1,126 @@
 
 const API_URL = "api"
+let item_cache = [] //simpli a list of items
+
+let render_cache = {}
 
 
-const fetch_item = async (id) => {
-	const res = await fetch(API_URL + "/" + id)
+//##functions
+async function get_items(ids, options){
+
+	//check if items already in chache
+	const cached_items = [ ...item_cache.filter(item => ids.includes(item._id)), ...item_cache.filter(item => ids.includes(item._name))]
+
+	const list_of_ids_and_names = [...cached_items.map( item => item._id), ...cached_items.map( item => item._name)]
+
+	const items_to_request = ids.filter( id => ![...cached_items.map( item => item._id), ...cached_items.map( item => item._name)].includes(id))
+	console.log("--------------------------------------------")
+	console.log("list", list_of_ids_and_names)
+	console.log("item_cache ", item_cache)
+	console.log("items to request ",items_to_request)
+
+	//if there are no items to request... return the cahced_items before sending the request
+	if (items_to_request.length === 0){return cached_items}
+
+	console.log("sending request")
+	//request the items, that are not in cache
+	const res = await fetch("=items", {
+		method: "POST",
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ids: items_to_request, options}),
+	})
 	const data = await res.json()
-	return data
+
+	//adding the requested items to the cache
+	item_cache = [...item_cache, ...data.items]
+	console.log("item_cache afterwards ",item_cache)
+
+	//returning all items that were asked for
+	return [...data.items, ...cached_items]
 };
 
-function navigateTo(path){
+async function get_renders(render_infos, call_after_every_render){
+
+	//later maybe get all renders in one call
+	//but now a for loop
+
+	//check for items that are in render
+	const already_in_cache = render_infos.filter(render_info => Object.keys(render_cache).includes(render_info.item_typeid))
+
+
+	for (const render_info of render_infos){
+		const render = import(`/static/items/${render_info.item_typeid}/index.js`)
+		if (call_after_every_render){call_after_every_render(render)}
+		render_cache[render_info.item_typeid] = render
+	}
+}
+
+
+function nav_to(path){
     history.pushState(null, null, path);
+    console.log("naving to"+path)
     main();
 }
 
-function update_item(){
+function update_item(item, callback){
 
 }
 
+async function render_item(item, render_info, parent_element){
+	console.log("calling render_item func")
+
+	//render the item
+	parent_element.innerHTML=""
+	const element_tag = item._typeid.split("_").join("-")
+	const item_element = document.createElement(element_tag);
+	item_element.item = item
+	item_element.site = site
+	item_element.render = render_info
+	parent_element.appendChild(item_element)
+
+
+}
+
+
+//##site-object
 //for passing params down to item_renderers
 const site = {
-	nav_to: navigateTo,
-	test: function test(e){console.log("testfunc"+e)},
-	update_item: update_item,
+	nav_to,
+	update_item,
+	get_items,
+	get_renders,
+	render_item,
+	socket: io.connect(),
 }
 
+//##main function
 async function main() {
-	console.log("main called")
 
 	// check what route we are on
 	let id = location.pathname.slice(1)
 	if ( id === "" ) { id = "main"}
 
+	const [item] = await get_items([id], {
 
-	//fetch the correct item
-	const item = await fetch_item(id)
+	})
 
-
-	//get the correct render object
-	const item_render = await import(`/static/items/${item._typeid}/index.js`)
-
-	const render = { simple_type : "pc_full"}
+	await get_renders([{item_typeid: item._typeid}])
 
 
-	//render the item
+
 	const item_frame = document.getElementById("item-frame")
-	item_frame.innerHTML=""
-	const element_tag = item._typeid.split("_").join("-")
-	const item_element = document.createElement(element_tag);
-	// const test = Object.values(item_render_class)[0]
-	// const item_element = new test()
-	item_element.item = item
-	item_element.site = site
-	item_element.render = render
-	console.log(item)
-	item_frame.appendChild(item_element)
+	render_item(item, {item_typeid: item._typeid, render_id: "pc_full"}, item_frame)
 
 	//update url
 	history.replaceState(null, null, item._name ? item._name : item._id);
 
 
-
 }
 
+
+//##Eventlisteners
 
 window.addEventListener("popstate", e => {
 	main();
@@ -69,64 +128,22 @@ window.addEventListener("popstate", e => {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-	//socketio stuff for now
-	const socket = io.connect("/")
+	//socketio stuff
+	// const socket = io.connect("/")
+
+	site.socket.on("connect", (id) => {
+	})
+
+
+
+	
 
 	document.body.addEventListener("click", e => {
 		if (e.target.matches("[no-reload]")) {
 			e.preventDefault();
-			navigateTo(e.target.href);
+			nav_to(e.target.href);
 		}
 	});
 
 	main()
 });
-
-
-
-//##########################################
-
-
-// const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
-
-// const getParams = match => {
-//     const values = match.result.slice(1);
-//     const keys = Array.from(match.route.path.matchAll(/:(\w+)/g)).map(result => result[1]);
-
-//     return Object.fromEntries(keys.map((key, i) => {
-//         return [key, values[i]];
-//     }));
-// };
-
-
-// const router = async () => {
-//     const routes = [
-//         { path: "/", view: Dashboard },
-//         { path: "/posts", view: Posts },
-//         { path: "/posts/:id", view: PostView },
-//         { path: "/settings", view: Settings }
-//     ];
-
-//     // Test each route for potential match
-//     const potentialMatches = routes.map(route => {
-//         return {
-//             route: route,
-//             result: location.pathname.match(pathToRegex(route.path))
-//         };
-//     });
-
-//     let match = potentialMatches.find(potentialMatch => potentialMatch.result !== null);
-
-//     if (!match) {
-//         match = {
-//             route: routes[0],
-//             result: [location.pathname]
-//         };
-//     }
-
-//     const view = new match.route.view(getParams(match));
-
-//     document.querySelector("#app").innerHTML = await view.getHtml();
-// };
-
-// window.addEventListener("popstate", router);
