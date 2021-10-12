@@ -14,15 +14,14 @@ async function get_items(ids, options){
 	const list_of_ids_and_names = [...cached_items.map( item => item._id), ...cached_items.map( item => item._name)]
 
 	const items_to_request = ids.filter( id => ![...cached_items.map( item => item._id), ...cached_items.map( item => item._name)].includes(id))
-	console.log("--------------------------------------------")
-	console.log("list", list_of_ids_and_names)
-	console.log("item_cache ", item_cache)
-	console.log("items to request ",items_to_request)
+	// console.log("--------------------------------------------")
+	// console.log("list", list_of_ids_and_names)
+	// console.log("item_cache ", item_cache)
+	// console.log("items to request ",items_to_request)
 
 	//if there are no items to request... return the cahced_items before sending the request
 	if (items_to_request.length === 0){return cached_items}
 
-	console.log("sending request")
 	//request the items, that are not in cache
 	const res = await fetch("=items", {
 		method: "POST",
@@ -35,7 +34,7 @@ async function get_items(ids, options){
 
 	//adding the requested items to the cache
 	item_cache = [...item_cache, ...data.items]
-	console.log("item_cache afterwards ",item_cache)
+	// console.log("item_cache afterwards ",item_cache)
 
 	//returning all items that were asked for
 	return [...data.items, ...cached_items]
@@ -60,7 +59,6 @@ async function get_renders(render_infos, call_after_every_render){
 
 function nav_to(path){
     history.pushState(null, null, path);
-    console.log("naving to"+path)
     main();
 }
 
@@ -69,7 +67,6 @@ function update_item(item, callback){
 }
 
 async function render_item(item, render_info, parent_element){
-	console.log("calling render_item func")
 
 	//render the item
 	parent_element.innerHTML=""

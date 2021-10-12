@@ -9,7 +9,8 @@ schema = new mongoose.Schema({
 	password: String,
 	wstoken: String,
 	wwwroot: String,
-	icon: {type: mongoose.Schema.Types.ObjectID, ref: "icon_item"}
+	icon: {type: mongoose.Schema.Types.ObjectID, ref: "icon_item"},
+	courses: [String],
 })
 
 
@@ -62,10 +63,42 @@ async function init(){
 	// });
 	// }
 
-
-
-
-
 }
 
-module.exports = {model, init}
+
+async function get_external_props(external_prop_keys, item){
+	const moodle_site = await model_base_item.findById(item._id)
+	let external_props = {}
+	await Promise.all(external_prop_keys.map( async prop_key => {
+		switch(prop_key){
+			case "enrolled_courses":
+
+				const res = await fetch(moodle_site.wwwroot + "/webservice/rest/server.php?" + new URLSearchParams({
+					wsfunction: "core_course_get_enrolled_courses_by_timeline_classification",
+					moodlewsrestformat: "json",
+					classification: "all",
+					wstoken: moodle_site.wstoken,
+				})).catch( () => {
+					console.log("fetch of moodle failed")
+					// return {_id: pre_item_id, _typeid: "moodle_course", external: true, error: "could not fetch external item"}
+				})
+
+				// if (!res){
+				// 	return {_id: pre_item_id, _typeid: "moodle_course", external: true, error: "could not fetch external item"}
+				// }
+
+				const courses = await res.json()
+				const course_ids = courses.courses.map(course => course.id)
+				const ids = course_ids.map(course_id => `!moodle_course!${item._id}!${course_id}`)
+
+				//return ["!moodle_course!moodle_site_id!courseid"]
+				external_props.enrolled_courses = ids
+				return
+
+				break
+		}
+	}))
+	return external_props
+}
+
+module.exports = {model, init, get_external_props}

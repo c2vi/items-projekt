@@ -10,13 +10,51 @@ export class PlainText extends BaseItemClass {
 		this.render_func(this.item)
 	}
 
+	set_inner_html(elm, html) {
+		elm.innerHTML = html;
+		Array.from(elm.querySelectorAll("script")).forEach( oldScript => {
+			const newScript = document.createElement("script");
+			Array.from(oldScript.attributes)
+				.forEach( attr => newScript.setAttribute(attr.name, attr.value) );
+			newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+			oldScript.parentNode.replaceChild(newScript, oldScript);
+		});
+	}
+
 
 	async render_func(item) {
-		
-		this.shadow_dom.innerHTML = `
-			<p> ${item._typeid}</p>
-			<p> ${item._name}</p>
-		`
+
+		if (this.render.render_id == "pc_full") {
+			if (!item.alias){item.alias = item.shortname}
+			
+			this.shadow_dom.innerHTML += `
+				<link rel="stylesheet" href="/static/items/moodle_course/pc_full.css" >
+			`
+
+			const mustache = await import("/static/mustache.js")
+
+			//getting the html
+			const request = new XMLHttpRequest();
+			request.open( 'GET', '/static/items/moodle_course/pc_full.html', true );
+			request.addEventListener( 'load', (event) => {
+			const template = event.target.response;
+			const result = mustache.default.render( template, item)
+			this.shadow_dom.innerHTML += result;
+			});
+			request.send();
+
+
+			console.log("course", item)
+
+
+		} else if (this.render.render_id = "pc_in_folder") {
+			this.shadow_dom.innerHTML = `
+				<p> ${item.id}</p>
+				<p> ${item.alias ? item.alias : item.shortname}</p>
+			`
+
+		}
+
 
 	}
 

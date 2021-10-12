@@ -10,10 +10,7 @@ const schema_base_item = new mongoose.Schema({
     render_item: String,
     _id: mongoose.Schema.Types.ObjectId,
     _name: { type : String, unique : true },
-    external: Boolean,
-    source: {
-        type: String,
-    }
+    sub_externals: [String]
 
 }, options_base_item); 
 

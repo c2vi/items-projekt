@@ -24,4 +24,4 @@ export class PlainText extends BaseItemClass {
 }
 
 
-customElements.define("list-of-text", PlainText)
+customElements.define("simple-todo-list", PlainText)

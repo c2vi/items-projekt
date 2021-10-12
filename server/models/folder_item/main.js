@@ -4,10 +4,7 @@ const mongoose = require("mongoose")
 const schema_folder = mongoose.Schema({
 	folder_name: String,
 	items: [{type: mongoose.Schema.Types.ObjectID, ref: "base_item"}],
-	external_items: [{
-		api_type: String,
-		_typeid: String,
-	}]
+	external_items: [String]
 })
 
 const model = model_base_item.discriminator("folder_item", schema_folder)

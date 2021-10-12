@@ -4,7 +4,7 @@ export class Folder extends BaseItemClass {
 	constructor(){
 		super()
 		this.shadow_dom = this.attachShadow({ mode: "open"})
-		this.shadow_dom.innerHTML = '<style> @import "/static/items/folder_item/item_element.css" </style> '
+		this.shadow_dom.innerHTML = '<style> @import "/static/items/folder_item/main.css" </style> '
 		this.wrapper = document.createElement("div")
 		this.wrapper.className = "folder-wrapper"
 		this.shadow_dom.appendChild(this.wrapper)
@@ -57,7 +57,6 @@ export class Folder extends BaseItemClass {
 			//make sure, that all renders are present
 			await this.site.get_renders(items.map( item => {return {item_typeid: item._typeid, render_id:"pc_in_folder"} }))
 
-			console.log(items)
 			for (const item of items) {
 				const [folder_element] = item_elements.filter( element => element.id === item._id)
 				const item_element = document.createElement(item._typeid.split("_").join("-"))
@@ -69,12 +68,19 @@ export class Folder extends BaseItemClass {
 
 
 		} else if (this.render.render_id == "pc_in_folder"){
-			console.log("rendering folder in folder")
 
-			this.shadow_dom.innerHTML = "a folder" //`
-			// 	<p> ${item._typeid}</p>
-			// 	<p> ${item._name}</p>
-			// `
+			this.shadow_dom.innerHTML = `
+				<style> @import "/static/items/folder_item/in_folder.css" </style>
+				<div class="in_folder"> 
+
+					<img class="icon" hight="50" width="50" src="/static/folder_icon.png"></img>
+					<div class="info">
+						<div class="line">${item._typeid}</div>
+						<div class="line">${item._name}</div> 
+					</div>
+					
+				</div>
+			`
 		}
 
 

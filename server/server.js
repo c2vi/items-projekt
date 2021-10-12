@@ -82,40 +82,60 @@ if (mongoose.Types.ObjectId.isValid(id)){
 
 async function get_item(id){
 
-  if (id.startsWith("!")) {
-      const typeid = id.split("_")[0].split("-").join("_").slice(1)
-      const item = await backend_items[typeid].get_external(id)
-      return item
-  }
-
-  let item_mongoose = {}
-
-  if (validate_ObjektId(id)) {
-      item_mongoose = backend_items.base_item.model.findOne( { _id: id } )
-  } else {
-      item_mongoose = backend_items.base_item.model.findOne( { _name : id } )
-  }
-
-      // item_mongoose.populate({
-      //   path:"items",
-      //   populate:"typeid"
-      // })
+    let item = {}
 
 
-      // item_mongoose.populate({
-      //     path: "items",
-      //     populate: {
-      //         path: "items",
-      //         populate: {
-      //             path: "items",
-      //         },
-      //     path: "game",
-      //     path: "icon",
-      //     },
-      // })
+    //if the id is external call the get_external() func from the item
+    if (id.startsWith("!")) {
+        const typeid = id.split("!")[1]
+        item = await backend_items[typeid].get_external(id)
+        let prop_item = await backend_items.base_item.model.findOne({_ext_id: id}).lean()
+        if (prop_item != null){
+            const other_keys = Object.keys(prop_item).filter(key => key.startsWith("_"))
+            other_keys.forEach(key => delete prop_item[key])
+            item = {...item, ...prop_item}
 
-      let item = await item_mongoose.lean().exec()
+        }
+    }
 
+
+    //if the id is an ObjektID, then get the item from MongoDB
+    let item_mongoose = {}
+
+    if (validate_ObjektId(id)) {
+        item_mongoose = backend_items.base_item.model.findOne( { _id: id } )
+        item = await item_mongoose.lean().exec()
+    } else if (!id.startsWith("!")) {
+        item_mongoose = backend_items.base_item.model.findOne( { _name : id } )
+        item = await item_mongoose.lean().exec()
+    }
+
+    //-------------------------------
+    //Puplating of sub_items curently not needed. You could specify what to pupulate in the options put into the request....
+    // item_mongoose.populate({
+    //   path:"items",
+    //   populate:"typeid"
+    // })
+
+
+    // item_mongoose.populate({
+    //     path: "items",
+    //     populate: {
+    //         path: "items",
+    //         populate: {
+    //             path: "items",
+    //         },
+    //     path: "game",
+    //     path: "icon",
+    //     },
+    // })
+    //-------------------------------
+
+
+
+
+    //-------------------------------
+    //Beta version of populating external_sub_items
     //   if (item && item.external_items && item.external_items.length != 0) {
           
     //       item.external_items = await Promise.all(item.external_items.map( async (external_item_id) => {
@@ -123,10 +143,20 @@ async function get_item(id){
     //           const test = await backend_items[typeid].get_external(external_item_id)
     //           return test
     //       }))
-// 
     //   }
+    //-------------------------------
 
-      return item
+    
+    //setting external_props
+    if (item.external_props){
+        const external_props = await backend_items[item._typeid].get_external_props(item.external_props, item)
+        item = {...item, ...external_props}
+
+    }
+
+
+    //and finally returning the item
+    return item
 }
 
 
