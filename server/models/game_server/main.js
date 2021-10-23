@@ -1,6 +1,5 @@
 const model_base_item = require("../base_item/main").model
 const mongoose = require("mongoose")
-const Discord = require('discord.js')
 const {NodeSSH} = require('node-ssh')
 const ssh = new NodeSSH()
 const wol = require('node-wol')
