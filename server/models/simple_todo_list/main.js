@@ -3,10 +3,11 @@ const mongoose = require("mongoose")
 
 const schema_list_of_text = mongoose.Schema({
 	list_name: String,
-    items: [{type: mongoose.Schema.Types.ObjectID , ref: "plain_text"}]
+	// todos: {{name: String, status: Boolean}},
+	todos: {},
 })
 
-const model = model_base_item.discriminator("list_of_text", schema_list_of_text)
+const model = model_base_item.discriminator("simple_todo_list", schema_list_of_text)
 
 module.exports = {model}
 

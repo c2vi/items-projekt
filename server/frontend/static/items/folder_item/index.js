@@ -30,9 +30,20 @@ export class Folder extends BaseItemClass {
 	// 	folder_element.appendChild(item_element)
 	// }
 
+	handle_dblclick(event, id){
+		console.log(event)
+		if (event.originalTarget.tagName.toLowerCase() == "button"){return}
+
+		nav_to(id)
+
+	}
+
 	async render_func(item) {
 
 		if (this.render.render_id == "pc_full"){
+
+			//like this the folder_item object is accessible from anywhere
+			this.site.folder_item = this
 
 			let item_ids = []
 			if (item.external_items){
@@ -42,10 +53,10 @@ export class Folder extends BaseItemClass {
 			}
 
 			//first load out a placeholder for all the items
-			const item_elements = item_ids.map( (id) => {
+			const item_one_elements = item_ids.map( (id) => {
 				const folder_element = document.createElement("div")
 				folder_element.id = id
-				folder_element.setAttribute("ondblclick", `site.nav_to("${id}")`)
+				folder_element.setAttribute("ondblclick", `site.folder_item.handle_dblclick(event,"${id}")`)
 				folder_element.className = "folder-element"
 				this.wrapper.appendChild(folder_element)
 				return folder_element
@@ -55,16 +66,27 @@ export class Folder extends BaseItemClass {
 			const items = await this.site.get_items(item_ids, {})
 
 			//make sure, that all renders are present
-			await this.site.get_renders(items.map( item => {return {item_typeid: item._typeid, render_id:"pc_in_folder"} }))
+			const render_infos = items.map( item => {return {item_typeid: item._typeid, render_id:"pc_in_folder"} })
+			await get_renders(render_infos)
 
 			for (const item of items) {
-				const [folder_element] = item_elements.filter( element => element.id === item._id)
-				const item_element = document.createElement(item._typeid.split("_").join("-"))
-				item_element.item = item
-				item_element.site = this.site
-				item_element.render = {item_typeid: item._typeid, render_id: "pc_in_folder"}
-				folder_element.appendChild(item_element)
+
+				const [folder_element] = item_one_elements.filter( element => element.id === item._id)
+				render_item(item, {item_typeid: item._typeid, render_id:"pc_in_folder"}, folder_element)
+
+				// folder_element.draggable = true
+				// const item_element = document.createElement(item._typeid.split("_").join("-"))
+				// item_element.item = item
+				// item_element.site = this.site
+				// item_element.render = {item_typeid: item._typeid, render_id: "pc_in_folder"}
+				// folder_element.appendChild(item_element)
 			}
+
+			// document.addEventListener("dblclick", e => {
+			// 	console.log("dblclick", e.target)
+			// 	if (e.target.in_folder_dblclick){e.target.in_folder_dblclick(e)}
+			// 	else (site.nav_to(e.target.item._id))
+			// })
 
 
 		} else if (this.render.render_id == "pc_in_folder"){

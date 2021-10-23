@@ -4,6 +4,10 @@ let item_cache = [] //simpli a list of items
 
 let render_cache = {}
 
+let item_elements = []
+
+
+
 
 //##functions
 async function get_items(ids, options){
@@ -16,7 +20,6 @@ async function get_items(ids, options){
 	const items_to_request = ids.filter( id => ![...cached_items.map( item => item._id), ...cached_items.map( item => item._name)].includes(id))
 	// console.log("--------------------------------------------")
 	// console.log("list", list_of_ids_and_names)
-	// console.log("item_cache ", item_cache)
 	// console.log("items to request ",items_to_request)
 
 	//if there are no items to request... return the cahced_items before sending the request
@@ -50,7 +53,7 @@ async function get_renders(render_infos, call_after_every_render){
 
 
 	for (const render_info of render_infos){
-		const render = import(`/static/items/${render_info.item_typeid}/index.js`)
+		const render = await import(`/static/items/${render_info.item_typeid}/index.js`)
 		if (call_after_every_render){call_after_every_render(render)}
 		render_cache[render_info.item_typeid] = render
 	}
@@ -58,11 +61,38 @@ async function get_renders(render_infos, call_after_every_render){
 
 
 function nav_to(path){
-    history.pushState(null, null, path);
-    main();
+	history.pushState(null, null, path);
+	main();
 }
 
-function update_item(item, callback){
+async function update_item(data, component ,callback_on_success){
+
+	//get the whole item (not just the things that changed)
+	const [item_element] = item_elements.filter(element => element.item._id == data.item._id)
+	const new_item = {...item_element.item, ...data.item}
+
+	data.item = new_item;
+
+	//send an update to the server
+	const test = JSON.stringify(data)
+	site.socket.emit('update_item', test)
+
+	//update the item in the cache
+	item_cache = item_cache.map( (old_item) => {
+		if (old_item._id == new_item._id){
+			return new_item
+		} else {
+			return old_item
+		}
+	})
+
+	//rerender the item
+	if (item_element.update) {
+		item_element.update(data)
+
+	} else {
+		render_item(new_item, item_element.render, item_element.parentElement)
+	}
 
 }
 
@@ -72,12 +102,11 @@ async function render_item(item, render_info, parent_element){
 	parent_element.innerHTML=""
 	const element_tag = item._typeid.split("_").join("-")
 	const item_element = document.createElement(element_tag);
+	item_elements = [item_element, ...item_elements]
 	item_element.item = item
 	item_element.site = site
 	item_element.render = render_info
 	parent_element.appendChild(item_element)
-
-
 }
 
 
@@ -129,6 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	// const socket = io.connect("/")
 
 	site.socket.on("connect", (id) => {
+	})
+
+	site.socket.on("update_item", data => {
+		const [item_element] = item_elements.filter( element => element.item._id == data.item._id)
+		item_element.update(data)
 	})
 
 

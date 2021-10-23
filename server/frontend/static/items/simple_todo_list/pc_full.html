@@ -1,0 +1,32 @@
+<div class="wrapper">
+	<div></div>
+	<div class="container">
+		{{#todos}}
+			<div id="{{index}}" class="todo" draggable="true">
+				<div class="hr"></div>
+
+				<div class="checkbox" id="{{index}}" >
+					{{#done}}
+					<img draggable="false" id="{{index}}" class="checked" src="/static/items/simple_todo_list/check-icon.png" height="60" width="60">
+					{{/done}}
+				</div>
+				<div class="text">{{name}}</div>
+				<button id="{{index}}" class="delete">X</button>
+				<div id="{{index}}" class="drag-ref"></div>
+
+			</div>
+		{{/todos}}
+		<div style="z-index: 10000; height: 52px; background-color:white; position: relative;">
+			<div class="hr"></div>
+			<div id="{{biggest_index}}" class="drag-ref"></div>
+		</div>
+
+
+	</div>
+	<div></div>
+	<div></div>
+	<div class="input-wrapper">
+		<input id="test" type="text">
+		<button class="add">Add</button>
+	</div>
+</div>

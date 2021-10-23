@@ -1,0 +1,106 @@
+.checkbox {
+	height: 20px;
+	width: 20px;
+	border-radius: 25%;
+	justify-self: center;
+	border: 0.5px solid;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 15px;
+	/* z-index: inherit; */
+}
+
+
+img {
+	margin-left: 13.5px;
+	margin-bottom: 15px;
+	/* z-index: inherit; */
+}
+
+
+.wrapper {
+	display: grid;
+	grid-template-columns: 1fr 4fr 1fr;
+	height: 90vh;
+
+}
+
+.container {
+	margin-top: 50px;
+	padding: 10px;
+	padding-top: 17px;
+	min-height: 20vh;
+	max-height: 75vh;
+	overflow: scroll;
+
+}
+
+.todo {
+	position: relative;
+	z-index: 20;
+	padding-left:0;
+	display: grid;
+	grid-template-columns: 1fr 9fr 1fr;
+	align-items: center;
+	background:white;
+	/* background-image: url(../simple_todo_list/check-icon.png); */
+	/* overflow: hidden; */
+
+}
+
+.todo:hover {
+	background-color: rgb(235, 235, 235);
+}
+
+.text {
+	display: flex;
+	align-items: center;
+	/* z-index: inherit; */
+}
+
+.hr {
+	margin: 0;
+	top:0.5px;
+	left:0;
+	right:0;
+	height: 1px;
+	background: grey;
+	opacity: 0.4;
+	z-index: 0;
+	position: absolute;
+}
+
+.delete {
+	font-size: 0.9em;
+	width: 35px;
+	height: 35px;
+	/* z-index: inherit; */
+}
+
+input {
+	margin-top: 10px;
+	/* margin-bottom: 100px; */
+}
+
+.drag-ref {
+	position: absolute;
+	/* background: green; */
+	opacity: 0.4;
+	border-radius: 3px;
+	left: 0;
+	right: 0;
+	top: -17px;
+	height: 34px;
+}
+
+hr {
+	box-shadow: 0px 0px 0px;
+	opacity: 0.2;
+}
+
+.input-wrapper {
+	align-self: end;
+	justify-self: end;
+	margin-right: 300px;
+}

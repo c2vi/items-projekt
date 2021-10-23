@@ -160,17 +160,22 @@ async function get_item(id){
 }
 
 
+async function update_item(item, callback_on_success){
+
+	await backend_items[item._typeid].model.update({_id: item._id}, { $set: item }).exec()
+}
+
 
 //##SocketIO stuff------------------------------
 io.on("connection", (socket) => {
     console.log("New client connected");
     socket.emit("id", socket.id);
 
-    socket.on("get_item", async (data) => {
-      console.log(data)
-      data = JSON.parse(data);
-      const item = await get_item(data._id)
-      socket.emit("got_item", JSON.stringify(item))
+    socket.on("update_item", async (data) => {
+        data = JSON.parse(data);
+        console.log(data)
+        io.emit("update_item", data )
+        await update_item(data.item)
     });
 
     socket.on("load_items", (item_ids) => {

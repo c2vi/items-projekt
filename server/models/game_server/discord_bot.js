@@ -22,7 +22,7 @@ module.exports = function discord_bot(){
 	}
 
 	async function power_up_host(game_server) {
-		wol.wake(game_server.host_powerup_wol_mac, () => {console.log("wol packet sent")})
+		wol.wake(game_server.host_powerup_wol_mac, {address: game_server.host_powerup_wol_ip}, () => {console.log("wol packet sent")})
 		
 	}
 

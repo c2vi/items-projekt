@@ -12,7 +12,9 @@ const items = {
 	moodle_site: require('./models/moodle/site'),
 	moodle_course: require('./models/moodle/course'),
 	icon_item: require('./models/icon_item/main'),
-	props_for_external: require('./models/props_for_external/main')
+	props_for_external: require('./models/props_for_external/main'),
+	simple_todo_list: require('./models/simple_todo_list/main')
+
 
 }
 
