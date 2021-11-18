@@ -1,5 +1,5 @@
 
-module.exports = function discord_bot(){
+module.exports = function discord_bot(model){
 
 	//##Functions for Discord-Bot-------------------------------
 

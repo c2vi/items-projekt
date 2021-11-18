@@ -39,7 +39,7 @@ function handle_socket_event(){
 }
 
 function init(){
-	discord_bot()
+	discord_bot(model)
 }
 
 module.exports = {model, handle_socket_event, init}
