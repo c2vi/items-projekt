@@ -1,3 +1,7 @@
+const mongoose = require("mongoose")
+const {NodeSSH} = require('node-ssh')
+const ssh = new NodeSSH()
+const wol = require('node-wol')
 
 module.exports = function discord_bot(model){
 

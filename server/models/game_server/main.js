@@ -1,8 +1,5 @@
 const model_base_item = require("../base_item/main").model
 const mongoose = require("mongoose")
-const {NodeSSH} = require('node-ssh')
-const ssh = new NodeSSH()
-const wol = require('node-wol')
 const discord_bot = require('./discord_bot')
 
 require("dotenv").config()
@@ -39,7 +36,7 @@ function handle_socket_event(){
 }
 
 function init(){
-	discord_bot(model)
+	// discord_bot(model)
 }
 
 module.exports = {model, handle_socket_event, init}
