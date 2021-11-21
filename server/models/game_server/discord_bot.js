@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 const {NodeSSH} = require('node-ssh')
 const ssh = new NodeSSH()
 const wol = require('node-wol')
+const { Rcon } = require('rcon-client')
 
 module.exports = function discord_bot(model){
 
@@ -23,6 +24,20 @@ module.exports = function discord_bot(model){
 
 		const result = await ssh.execCommand(command, {cwd: typeof game_server.start_exec_dir == "undefined" || typeof game_server.start_exec_dir == "null" ? "." : game_server.start_exec_dir})
 		return result.stdout
+	}
+
+	async function exec_rcon_command(command, game_server){
+
+		const rcon = new Rcon({
+			host: game_server.ssh_credentials.host,
+			port: game_server.rcon_port,
+			password: game_server.rcon_pwd,
+		})
+		await rcon.connect()
+	
+		const response = await rcon.send(command)
+		rcon.end()
+		return response
 	}
 
 	async function power_up_host(game_server) {
@@ -89,6 +104,21 @@ module.exports = function discord_bot(model){
 			
 			let command = ""
 			switch(splitMessage[2]){
+				case "rcon":
+						if (!splitMessage[3]){break}
+						if (game_server.allowed_rcon_commands.includes(splitMessage[3])){
+							const rcon_command = splitMessage.slice(3, splitMessage.length).join(" ")
+							console.log("rcon: " + rcon_command)
+
+							const response = await exec_rcon_command(rcon_command, game_server)
+
+							message.reply("**Response: \n**" + response)
+
+						} else {
+							message.reply("This rcon command does not exist, or is not allowed.")
+						}
+
+					break
 				case "start":
 					try{
 						message.reply("starting...")
@@ -112,7 +142,14 @@ module.exports = function discord_bot(model){
 					message.reply("stopping...")
 					const running_servers = await check_for_other_running_servers(game_server)
 					if (!running_servers.length){
-						const result = await exec_ssh_command(game_server.stop_command, game_server)
+
+						if (game_server.stop_method == "ssh"){
+							await exec_ssh_command(game_server.stop_command, game_server)
+						} else if (game_server.stop_method == "rcon"){
+							await exec_rcon_command(game_server.stop_command, game_server)
+							await sleep(30000)
+						}
+
 						message.reply("Server stopped. Now shuting down host")
 						await exec_ssh_command(game_server.host_powerdown_command, game_server)
 						game_server.status = "offline"
@@ -120,7 +157,14 @@ module.exports = function discord_bot(model){
 
 					} else {
 						message.reply("stopping...")
-						const result = await exec_ssh_command(game_server.stop_command, game_server)
+
+						if (game_server.stop_method == "ssh"){
+							await exec_ssh_command(game_server.stop_command, game_server)
+						} else if (game_server.stop_method == "rcon"){
+							await exec_rcon_command(game_server.stop_command, game_server)
+							await sleep(30000)
+						}
+
 						message.reply("Server stopped, but **Not shuting down host**, because other servers are running.\n" + result.stdout)
 						game_server.status = "offline"
 						await update_status(game_server)

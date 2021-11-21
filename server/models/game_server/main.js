@@ -25,6 +25,11 @@ schema = new mongoose.Schema({
     status: String,
     host_powerup_wol_mac: String,
     host_powerdown_command: String,
+    rcon_port: Number,
+    rcon_pwd: String,
+    start_method: String,
+    stop_method: String,
+    allowed_rcon_commands: [String],
 
 
 })
@@ -36,7 +41,7 @@ function handle_socket_event(){
 }
 
 function init(){
-	// discord_bot(model)
+	discord_bot(model)
 }
 
 module.exports = {model, handle_socket_event, init}
