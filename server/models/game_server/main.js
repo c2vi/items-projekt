@@ -41,7 +41,7 @@ function handle_socket_event(){
 }
 
 function init(){
-	discord_bot(model)
+	// discord_bot()
 }
 
 module.exports = {model, handle_socket_event, init}

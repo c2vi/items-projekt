@@ -1,0 +1,18 @@
+{
+	"render_id": "grid_folder_item",
+	"types": ["full", "in_folder"],
+	"platforms": ["browser"],
+	"objects": [
+		{
+			"id": "1",
+			"type": "full",
+			"file_path": "full/index.js"
+		},
+		{
+			"id": "2",
+			"type": "in_folder",
+			"file_path": "in_folder/index.js"
+		}
+	]
+
+}

@@ -1,5 +1,5 @@
-import {BaseItemClass} from "../base_item/index.js"
-export class PlainText extends BaseItemClass {
+// import {Main as BaseItemClass} from "../base_item/index.js"
+export class Main extends HTMLElement {
 	constructor(){
 		super()
 		this.shadow_dom = this.attachShadow({ mode: "open"})
@@ -24,7 +24,7 @@ export class PlainText extends BaseItemClass {
 
 	async render_func(item) {
 
-		if (this.render.render_id == "pc_full") {
+		if (this.render_desc.type == "full") {
 			if (!item.alias){item.alias = item.shortname}
 			
 			this.shadow_dom.innerHTML += `
@@ -47,7 +47,7 @@ export class PlainText extends BaseItemClass {
 			console.log("course", item)
 
 
-		} else if (this.render.render_id = "pc_in_folder") {
+		} else if (this.render_desc.type = "in_folder") {
 			this.shadow_dom.innerHTML = `
 				<p> ${item.id}</p>
 				<p> ${item.alias ? item.alias : item.shortname}</p>
@@ -60,6 +60,3 @@ export class PlainText extends BaseItemClass {
 
 
 }
-
-
-customElements.define("moodle-course", PlainText)

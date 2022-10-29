@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 const options_base_item = {
     discriminatorKey: '_typeid',
-    collection: 'items'
+    collection: 'items',
 }
 
 const schema_base_item = new mongoose.Schema({
@@ -10,7 +10,8 @@ const schema_base_item = new mongoose.Schema({
     render_item: String,
     _id: mongoose.Schema.Types.ObjectId,
     _name: { type : String, unique : true },
-    sub_externals: [String]
+    sub_externals: [String],
+    render_info: mongoose.Schema.Types.Mixed, 
 
 }, options_base_item); 
 

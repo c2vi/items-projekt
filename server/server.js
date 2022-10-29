@@ -161,8 +161,8 @@ async function get_item(id){
 
 
 async function update_item(item, callback_on_success){
-
 	await backend_items[item._typeid].model.update({_id: item._id}, { $set: item }).exec()
+
 }
 
 
@@ -173,21 +173,20 @@ io.on("connection", (socket) => {
 
     socket.on("update_item", async (data) => {
         data = JSON.parse(data);
-        console.log(data)
         io.emit("update_item", data )
         await update_item(data.item)
     });
 
-    socket.on("load_items", (item_ids) => {
-      let items = []
-      JSON.parse(item_ids).map( item_id => {
-        backend_items.base_item.model.findById(item_id)
-          .exec()
-          .then( item => items.push(item))
-          .catch( err => console.log(err));
+    // socket.on("load_items", (item_ids) => {
+    //   let items = []
+    //   JSON.parse(item_ids).map( item_id => {
+    //     backend_items.base_item.model.findById(item_id)
+    //       .exec()
+    //       .then( item => items.push(item))
+    //       .catch( err => console.log(err));
 
-      }).then(console.log(items))
-    })
+    //   }).then(console.log(items))
+    // })
 
 });
 
@@ -199,8 +198,8 @@ io.on("connection", (socket) => {
 const mongo = mongoose.connect(process.env.MONGO_URL,{
     useNewUrlParser: true,
     useUnifiedTopology: true
-})
+}).then(console.log("connection to MongoDB successful")).catch((err) => console.log("connection to MongoDB failed" + err))
 
 //------------------------------------------------------
 
-module.exports = {addToMainFolder, get_item, validate_ObjektId}
+module.exports = {addToMainFolder, get_item, validate_ObjektId, mongo}

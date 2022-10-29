@@ -1,0 +1,13 @@
+
+{
+	"render_id": "folder_item",
+	"platforms": ["browser"],
+	"alltypes": true,
+	"objects": [
+		{
+			"id": "1",
+			"file_path": "index.js"
+		}
+	]
+
+}

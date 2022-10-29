@@ -3,7 +3,7 @@ const items = {
 	base_item: require('./models/base_item/main'),
 	plain_text: require('./models/plain_text/main'),
 	number_int: require('./models/number_int/main'),
-	folder: require('./models/folder_item/main'),
+	folder_item: require('./models/folder_item/main'),
 	list_of_text: require('./models/simple_todo_list/main'),
 	simple_counter: require('./models/simple_counter/main'),
 	game_server: require('./models/game_server/main'),

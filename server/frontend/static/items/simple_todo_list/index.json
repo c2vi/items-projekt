@@ -1,0 +1,12 @@
+{
+	"render_id": "simple_todo_list",
+	"platforms": ["browser"],
+	"alltypes": true,
+	"objects": [
+		{
+			"id": "1",
+			"file_path": "index.js"
+		}
+	]
+
+}

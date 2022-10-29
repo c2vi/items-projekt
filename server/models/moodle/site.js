@@ -1,7 +1,7 @@
 const model_base_item = require("../base_item/main").model
 const moodle_client = require("moodle-client")
 const mongoose = require("mongoose")
-const fetch = require("node-fetch-commonjs").default
+const {fetch, Request, Response} = require('undici')
 
 
 schema = new mongoose.Schema({
@@ -83,11 +83,13 @@ async function get_external_props(external_prop_keys, item){
 					// return {_id: pre_item_id, _typeid: "moodle_course", external: true, error: "could not fetch external item"}
 				})
 
-				// if (!res){
-				// 	return {_id: pre_item_id, _typeid: "moodle_course", external: true, error: "could not fetch external item"}
-				// }
-
 				const courses = await res.json()
+
+				if (!courses){
+					return {_id: pre_item_id, _typeid: "moodle_course", external: true, error: "could not fetch external item"}
+					console.log("moodel fetch failed")
+				}
+
 				const course_ids = courses.courses.map(course => course.id)
 				const ids = course_ids.map(course_id => `!moodle_course!${item._id}!${course_id}`)
 

@@ -1,5 +1,5 @@
-import {BaseItemClass} from "../base_item/index.js"
-export class Component extends BaseItemClass {
+// import {Main as BaseItemClass} from "../base_item/index.js"
+export class Main extends HTMLElement {
 	constructor(){
 		super()
 		this.shadow_dom = this.attachShadow({ mode: "open"})
@@ -17,9 +17,9 @@ export class Component extends BaseItemClass {
 		// await get_renders([{item_typeid: "icon_item", render_id: "something"}])
 
 		//get icon item
-		const [icon_item] = await this.site.get_items([item.icon], {})
+		const [icon_item] = await get_items([item.icon], {})
 
-		if (this.render.render_id == "pc_in_folder"){
+		if (this.render_desc.type == "in_folder"){
 
 		this.shadow_dom.innerHTML += `
 			<div class="in_folder"> 
@@ -34,10 +34,15 @@ export class Component extends BaseItemClass {
 			</div>
 		`
 
-		} else if (this.render.render_id == "pc_full"){
+		} else if (this.render_desc.type == "full"){
 
-			//make sure the moodle course render is available
-			await site.get_renders([{item_typeid: "moodle_course", render_id: "pc_in_folder"}, {item_typeid: "folder_item", render_id: "pc_in_folder"}])
+			const render_desc = {
+				render_id: "folder_item",
+				type: "full",
+				from_render: "moodle_site",
+				for_item_type: item._typeid,
+				plattform: "browser",
+			}
 
 			const courses_item = {
 				_id: "!moodle_courses",
@@ -50,7 +55,7 @@ export class Component extends BaseItemClass {
 			courses_wrapper.className = "course-wrapper"
 			this.shadow_dom.appendChild(courses_wrapper)
 
-			render_item(courses_item, {item_typeid: item._typeid, render_id: "pc_full"}, courses_wrapper)
+			render_item(courses_item, render_desc, courses_wrapper)
 
 		}
 		
@@ -59,5 +64,3 @@ export class Component extends BaseItemClass {
 
 
 }
-
-customElements.define("moodle-site", Component)

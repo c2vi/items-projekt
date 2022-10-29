@@ -1,0 +1,13 @@
+
+{
+	"render_id": "moodle_course",
+	"platforms": ["browser"],
+	"alltypes": true,
+	"objects": [
+		{
+			"id": "1",
+			"file_path": "index.js"
+		}
+	]
+
+}

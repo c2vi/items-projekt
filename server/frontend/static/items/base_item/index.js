@@ -1,6 +1,7 @@
-export class BaseItemClass extends HTMLElement {
+export class Main extends HTMLElement {
 	constructor(){
 		super()
+		this.shadow_dom = this.attachShadow({ mode: "open"})
 	}
 
 	

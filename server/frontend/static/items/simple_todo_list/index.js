@@ -1,8 +1,9 @@
-import {BaseItemClass} from "../base_item/index.js"
-export class PlainText extends BaseItemClass {
+// import {Main as BaseItemClass} from "../base_item/index.js"
+export class Main extends HTMLElement {
 	constructor(){
 		super()
 		this.shadow_dom = this.attachShadow({ mode: "open"})
+
 	}
 
 	
@@ -22,7 +23,15 @@ export class PlainText extends BaseItemClass {
 	}
 
 	update(data){
+		if (this.render_desc.type == "in_folder"){
+			this.render_func(data.item)
+			return
+		}
 		const new_item = data.item
+
+
+		//sometimes there are todos with an index of zero that you can't remove
+		new_item.todos = new_item.todos.filter( todo => todo.index != null)
 
 		async function rerender_todos(item_element, todos){
 			//sorting Items and getting biggest_index
@@ -56,8 +65,6 @@ export class PlainText extends BaseItemClass {
 			console.log("todo added or deleted")
 			rerender_todos(this, new_item.todos)
 			this.item.todos = new_item.todos
-
-
 		}
 
 		//if todo done status changed
@@ -77,7 +84,6 @@ export class PlainText extends BaseItemClass {
 			}
 			dragged_todo = dragged_todo[0]
 			dragged_todo.index += 0.5
-			console.log("dragged!!!!!",dragged_todo.index)
 
 			const [todo_to_insert] = new_item.todos.filter(todo => todo.name == dragged_todo.name)
 
@@ -153,8 +159,7 @@ export class PlainText extends BaseItemClass {
 
 	async render_func(item) {
 
-
-		if (this.render.render_id == "pc_full"){
+		if (this.render_desc.type == "full"){
 
 
 			
@@ -163,8 +168,8 @@ export class PlainText extends BaseItemClass {
 
 			this.shadow_dom.innerHTML = `
 				<link rel="stylesheet" href="/static/items/simple_todo_list/pc_full.css" >
-			
 			`
+
 
 			//importing moustache -- should be moved to a system to import "render-helpers" or sth like also react
 			this.mustache = await import("/static/mustache.js")
@@ -214,8 +219,8 @@ export class PlainText extends BaseItemClass {
 
 			// this.shadow_dom.removeEventListener("drop", (event) => {})
 			this.shadow_dom.addEventListener("drop" , (event) => {
-				if (event.originalTarget.className == "drag-ref"){
-					event.originalTarget.style.background = ""
+				if (event.target.className == "drag-ref"){
+					event.target.style.background = ""
 					
 					//the index that the todo should be insertet BEFORE
 					const index_before = event.target.id
@@ -236,22 +241,22 @@ export class PlainText extends BaseItemClass {
 
 			// this.shadow_dom.removeEventListener("dragenter", (event) => {})
 			this.shadow_dom.addEventListener("dragenter", (event) => {
-				if (event.originalTarget.className == "drag-ref") {
-					event.originalTarget.style.background = "gray"
+				if (event.target.className == "drag-ref") {
+					event.target.style.background = "gray"
 				}
 			})
 
 			// this.shadow_dom.removeEventListener("dragleave", (event) => {})
 			this.shadow_dom.addEventListener("dragleave", (event) => {
-				if (["drag-ref-one", "drag-ref"].includes(event.originalTarget.className )) {
-					event.originalTarget.style.background = ""
+				if (["drag-ref-one", "drag-ref"].includes(event.target.className )) {
+					event.target.style.background = ""
 				}
 			})
 
 			// this.shadow_dom.removeEventListener("click", (event) => {})
 			this.shadow_dom.addEventListener("click", (event) => {
-				if (event.explicitOriginalTarget.className == "checkbox" || event.explicitOriginalTarget.className == "checked"){
-					const index = event.originalTarget.id
+				if (event.target.className == "checkbox" || event.target.className == "checked"){
+					const index = event.target.id
 
 					//create clone of todos, to not modify this.item
 					const todos = this.item.todos
@@ -270,7 +275,7 @@ export class PlainText extends BaseItemClass {
 
 
 				} else if (event.target.className == "delete"){
-					const index = event.originalTarget.id
+					const index = event.target.id
 					const new_todos = this.item.todos.filter( todo => index != todo.index)
 
 					update_item({index_of_dragged: this.index_of_dragged, item:{_id: this.item._id, _typeid: "simple_todo_list", todos: new_todos}})
@@ -300,21 +305,17 @@ export class PlainText extends BaseItemClass {
 
 
 
-		} else if (this.render.render_id == "pc_in_folder"){
+		} else if (this.render_desc.type == "in_folder"){
+
+			const completed_todos = item.todos.filter(todo => todo.done)
+			// const uncompleted_todos = item.todos.filter(todo => !todo.done)
+			const percent = Math.round(completed_todos.length / item.todos.length * 100)
+
 			this.shadow_dom.innerHTML = `
-				<p> ${item._typeid}</p>
 				<p> ${item._name}</p>
+				<p> ${percent}% Completet!!</p>
 			`
 
-		} else {
-			this.shadow_dom.innerHTML = "This render does not exist for this item-type."
 		}
-		
-
 	}
-
-
 }
-
-
-customElements.define("simple-todo-list", PlainText)

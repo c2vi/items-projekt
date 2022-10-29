@@ -5,6 +5,7 @@ const schema_folder = mongoose.Schema({
 	folder_name: String,
 	items: [{type: mongoose.Schema.Types.ObjectID, ref: "base_item"}],
 	external_items: [String]
+}, {
 })
 
 const model = model_base_item.discriminator("folder_item", schema_folder)

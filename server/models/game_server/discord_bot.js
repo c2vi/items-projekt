@@ -145,9 +145,10 @@ module.exports = function discord_bot(model){
 
 						if (game_server.stop_method == "ssh"){
 							await exec_ssh_command(game_server.stop_command, game_server)
+							await sleep(60000)
 						} else if (game_server.stop_method == "rcon"){
 							await exec_rcon_command(game_server.stop_command, game_server)
-							await sleep(30000)
+							await sleep(60000)
 						}
 
 						message.reply("Server stopped. Now shuting down host")
@@ -160,6 +161,7 @@ module.exports = function discord_bot(model){
 
 						if (game_server.stop_method == "ssh"){
 							await exec_ssh_command(game_server.stop_command, game_server)
+							await sleep(30000)
 						} else if (game_server.stop_method == "rcon"){
 							await exec_rcon_command(game_server.stop_command, game_server)
 							await sleep(30000)

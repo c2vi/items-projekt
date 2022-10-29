@@ -1,0 +1,35 @@
+	//how a render_info should look like
+	render_desc_example = {
+
+		//would maybe be the name of the folder/git-repo where the render is stored.
+		//or: is the name of the project that develops that render
+		//this is whalt could be specified on an item, to tell it what to use to render
+		id: "e.g. grid_folder_item",
+
+		//we want to deal with versions
+		//that would be the version of the render or the github repo
+		version: "1.0.12",
+
+		//there should also be renders in binary/python/java format for different architectures and OSs
+		//that can be requested through the same api.
+		//Also i am thinking for IOS to render JS-components, but with a some special objects to
+		//interact with some native features....the plattform would than be sth like: "ios_js".
+		plattform: "browser",
+
+		//which render is trying to render that item out
+		//an item should look different depending on if it is inside a folder, inside a todo list, or loaded as a full page on a browser
+		//the "browser_main" would indicate that the item is rendered out as a full page on the browser
+		from_render: "browser_main",
+
+		//stuff to further tell the render how to look e.g. scale, colour, darkmode/lightmode, size, headerbar true/false...
+		//mostly render spacific
+		type: "", //type is now uset fot that pc_full and pc_in_folder thingi
+		//and
+		options: "",
+
+		//a render can be different depending on the item type
+		for_item_type: "the typeid of an item",
+
+		_cache_name: "a-a",
+
+	}

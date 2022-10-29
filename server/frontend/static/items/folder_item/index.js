@@ -1,6 +1,6 @@
-import {BaseItemClass} from "../base_item/index.js"
+// import {Main as BaseItemClass} from "../base_item/index.js"
 
-export class Folder extends BaseItemClass {
+export class Main extends HTMLElement {
 	constructor(){
 		super()
 		this.shadow_dom = this.attachShadow({ mode: "open"})
@@ -31,8 +31,7 @@ export class Folder extends BaseItemClass {
 	// }
 
 	handle_dblclick(event, id){
-		console.log(event)
-		if (event.originalTarget.tagName.toLowerCase() == "button"){return}
+		if (event.target.tagName.toLowerCase() == "button"){return}
 
 		nav_to(id)
 
@@ -40,16 +39,17 @@ export class Folder extends BaseItemClass {
 
 	async render_func(item) {
 
-		if (this.render.render_id == "pc_full"){
+		if (this.render_desc.type == "full"){
 
 			//like this the folder_item object is accessible from anywhere
-			this.site.folder_item = this
+			site.folder_item = {}
+			site.folder_item.handle_dblclick = this.handle_dblclick
 
 			let item_ids = []
 			if (item.external_items){
 				item_ids = [ ...item.items, ...item.external_items]
 			} else {
-				item_ids = item.items
+				item_ids = item.enrolled_courses
 			}
 
 			//first load out a placeholder for all the items
@@ -57,22 +57,27 @@ export class Folder extends BaseItemClass {
 				const folder_element = document.createElement("div")
 				folder_element.id = id
 				folder_element.setAttribute("ondblclick", `site.folder_item.handle_dblclick(event,"${id}")`)
+				folder_element.setAttribute("draggable", true)
 				folder_element.className = "folder-element"
 				this.wrapper.appendChild(folder_element)
 				return folder_element
 			})
 
 			//then request the whole items
-			const items = await this.site.get_items(item_ids, {})
-
-			//make sure, that all renders are present
-			const render_infos = items.map( item => {return {item_typeid: item._typeid, render_id:"pc_in_folder"} })
-			await get_renders(render_infos)
+			const items = await get_items(item_ids, {})
 
 			for (const item of items) {
 
-				const [folder_element] = item_one_elements.filter( element => element.id === item._id)
-				render_item(item, {item_typeid: item._typeid, render_id:"pc_in_folder"}, folder_element)
+				const render_desc = {
+					render_id: item.render_id ? item.render_id : item._typeid,
+					type: "in_folder",
+					from_render: "folder_item",
+					plattform: "browser",
+					for_item_type: item._typeid,
+				}
+
+				const folder_element = this.shadow_dom.getElementById(item._id)
+				await render_item(item, render_desc, folder_element)
 
 				// folder_element.draggable = true
 				// const item_element = document.createElement(item._typeid.split("_").join("-"))
@@ -89,7 +94,7 @@ export class Folder extends BaseItemClass {
 			// })
 
 
-		} else if (this.render.render_id == "pc_in_folder"){
+		} else if (this.render_desc.type == "in_folder"){
 
 			this.shadow_dom.innerHTML = `
 				<style> @import "/static/items/folder_item/in_folder.css" </style>
@@ -111,8 +116,3 @@ export class Folder extends BaseItemClass {
 
 
 }
-
-
-
-
-customElements.define("folder-item", Folder)

@@ -1,12 +1,12 @@
-
-const API_URL = "api"
 let item_cache = [] //simpli a list of items
 
 let render_cache = {}
 
-let item_elements = []
+let cache_names = []
 
+let render_info_cache = []
 
+const site = {}
 
 
 //##functions
@@ -18,9 +18,6 @@ async function get_items(ids, options){
 	const list_of_ids_and_names = [...cached_items.map( item => item._id), ...cached_items.map( item => item._name)]
 
 	const items_to_request = ids.filter( id => ![...cached_items.map( item => item._id), ...cached_items.map( item => item._name)].includes(id))
-	// console.log("--------------------------------------------")
-	// console.log("list", list_of_ids_and_names)
-	// console.log("items to request ",items_to_request)
 
 	//if there are no items to request... return the cahced_items before sending the request
 	if (items_to_request.length === 0){return cached_items}
@@ -37,45 +34,103 @@ async function get_items(ids, options){
 
 	//adding the requested items to the cache
 	item_cache = [...item_cache, ...data.items]
-	// console.log("item_cache afterwards ",item_cache)
 
 	//returning all items that were asked for
 	return [...data.items, ...cached_items]
 };
 
-async function get_renders(render_infos, call_after_every_render){
+async function get_render_info(render_id){
 
-	//later maybe get all renders in one call
-	//but now a for loop
-
-	//check for items that are in render
-	const already_in_cache = render_infos.filter(render_info => Object.keys(render_cache).includes(render_info.item_typeid))
-
-
-	for (const render_info of render_infos){
-		const render = await import(`/static/items/${render_info.item_typeid}/index.js`)
-		if (call_after_every_render){call_after_every_render(render)}
-		render_cache[render_info.item_typeid] = render
+	//check if render_info is cached
+	const render_info_in_cache = render_info_cache.filter( info => info.render_id == render_id)
+	
+	let render_info;
+	if (render_info_in_cache.length == 0) {
+		//if not cached get render_info
+		const info_res = await fetch(`/static/items/${render_id}/index.json`)
+		render_info = await info_res.json()
+		render_info_cache = [render_info, ...render_info_cache]
+	} else {
+		render_info = render_info_in_cache[0]
 	}
+
+	return render_info
 }
 
+
+async function render_item(item, render_desc, parent_element){
+
+	let render_info = {}
+	try {
+		render_info = await get_render_info(render_desc.render_id)
+	} catch (err) {
+		render_info = await get_render_info("base_item")
+	}
+
+	let render_obj = {}
+	if (render_info.alltypes){
+		render_obj = render_info.objects[0]
+	} else {
+		render_obj = render_info.objects.filter( object => object.type == render_desc.type)[0]
+	}
+
+	//if render not already cached
+	if (!render_obj._cache_name){
+
+		render_obj._cache_name = new_cache_name()
+
+		const render = await import(`/static/items/${render_info.render_id}/${render_obj.file_path}`)
+		render_cache[render_obj._cache_name] = render.Main
+
+		customElements.define(render_obj._cache_name, render_cache[render_obj._cache_name])
+	}
+
+	//actualy render the item
+	parent_element.innerHTML=""
+	const element_tag = render_obj._cache_name
+	const item_element = document.createElement(element_tag);
+	item_element.item = item
+	item_element.render_desc = render_desc
+	item_element.render_obj = render_obj
+	item_element.id = item._id
+	parent_element.appendChild(item_element)
+}
+
+function new_cache_name(){
+	const alphabet = "abcdefghijklmnopqrstuvwxyz".split("")
+
+	while (true){
+		let id = Math.random().toString(36).substr(2, 14)
+		const array = [...id].filter(char => alphabet.includes(char))
+		id = array.join("-")
+		if (!cache_names.includes(id)){
+			cache_names.push(id)
+			return id
+			break
+		}
+	}
+
+}
 
 function nav_to(path){
 	history.pushState(null, null, path);
 	main();
 }
 
-async function update_item(data, component ,callback_on_success){
+async function update_item(data, nota_socket_event ,callback_on_success){
 
 	//get the whole item (not just the things that changed)
-	const [item_element] = item_elements.filter(element => element.item._id == data.item._id)
+	// const [item_element] = item_elements.filter(element => element.item._id == data.item._id)
+	const item_element = document.getElementById(data.item._id);
 	const new_item = {...item_element.item, ...data.item}
 
 	data.item = new_item;
 
 	//send an update to the server
-	const test = JSON.stringify(data)
-	site.socket.emit('update_item', test)
+	if (!data.socket_event){
+		const test = JSON.stringify(data)
+		socket.emit('update_item', test)
+	}
 
 	//update the item in the cache
 	item_cache = item_cache.map( (old_item) => {
@@ -89,36 +144,13 @@ async function update_item(data, component ,callback_on_success){
 	//rerender the item
 	if (item_element.update) {
 		item_element.update(data)
-
 	} else {
-		render_item(new_item, item_element.render, item_element.parentElement)
+		render_item(new_item, item_element.render_desc, item_element.parentElement)
 	}
 
-}
+	//set the item of item_element to the new one
+	item_element.item = data.item
 
-async function render_item(item, render_info, parent_element){
-
-	//render the item
-	parent_element.innerHTML=""
-	const element_tag = item._typeid.split("_").join("-")
-	const item_element = document.createElement(element_tag);
-	item_elements = [item_element, ...item_elements]
-	item_element.item = item
-	item_element.site = site
-	item_element.render = render_info
-	parent_element.appendChild(item_element)
-}
-
-
-//##site-object
-//for passing params down to item_renderers
-const site = {
-	nav_to,
-	update_item,
-	get_items,
-	get_renders,
-	render_item,
-	socket: io.connect(),
 }
 
 //##main function
@@ -126,18 +158,23 @@ async function main() {
 
 	// check what route we are on
 	let id = location.pathname.slice(1)
+
+	//load "main" item by default
 	if ( id === "" ) { id = "main"}
 
-	const [item] = await get_items([id], {
+	const [item] = await get_items([id], {})
 
-	})
-
-	await get_renders([{item_typeid: item._typeid}])
-
-
+	const render_desc = {
+		render_id: item.render_id ? item.render_id : item._typeid,
+		for_item_type: item._typeid,
+		type: "full",
+		plattform: "browser",
+		user_agent: navigator.userAgent,
+		from_render: "browser_main",
+	}
 
 	const item_frame = document.getElementById("item-frame")
-	render_item(item, {item_typeid: item._typeid, render_id: "pc_full"}, item_frame)
+	await render_item(item, render_desc, item_frame)
 
 	//update url
 	history.replaceState(null, null, item._name ? item._name : item._id);
@@ -149,32 +186,25 @@ async function main() {
 //##Eventlisteners
 
 window.addEventListener("popstate", e => {
-	main();
+main();
 })
 
-document.addEventListener("DOMContentLoaded", () => {
+//socketio stuff
+const socket = io.connect("/")
 
-	//socketio stuff
-	// const socket = io.connect("/")
+socket.on("connect", (id) => {
+})
 
-	site.socket.on("connect", (id) => {
-	})
+socket.on("update_item", data => {
+	data.socket_event = true
+	update_item(data)
+})
 
-	site.socket.on("update_item", data => {
-		const [item_element] = item_elements.filter( element => element.item._id == data.item._id)
-		item_element.update(data)
-	})
-
-
-
-	
-
-	document.body.addEventListener("click", e => {
-		if (e.target.matches("[no-reload]")) {
-			e.preventDefault();
-			nav_to(e.target.href);
-		}
-	});
-
-	main()
+document.body.addEventListener("click", e => {
+	if (e.target.matches("[no-reload]")) {
+		e.preventDefault();
+		nav_to(e.target.href);
+	}
 });
+
+main()
